@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from app.controllers.order_controller import create_order
 from app.rabbitmq import publish_message
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 order_bp = Blueprint('orders', __name__)
 
@@ -30,4 +32,5 @@ def create_order_view():
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
-        return jsonify({"error": "An internal error occurred"}), 500
+        logging.error("Internal Server Error: %s", e)
+        return jsonify({"error": f"An internal error occurred: {str(e)}"}), 500

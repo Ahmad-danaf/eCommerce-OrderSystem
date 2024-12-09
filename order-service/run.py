@@ -1,13 +1,11 @@
-import threading
+from threading import Thread
 from app.rabbitmq import start_consumer
 from app import create_app
 
 # Start Flask app
 app = create_app()
-
 if __name__ == "__main__":
-    # Run RabbitMQ consumer in a separate thread
-    threading.Thread(target=start_consumer).start()
-
-    # Start Flask API
-    app.run(debug=True, port=5001)
+    # Start consumer in a separate thread
+    consumer_thread = Thread(target=start_consumer, daemon=True)
+    consumer_thread.start()
+    app.run(host="0.0.0.0", port=5001, debug=True)
