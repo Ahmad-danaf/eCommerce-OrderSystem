@@ -15,6 +15,16 @@ class Item:
         
     def __str__(self):
         return f"Item ID: {self.item_id}, Quantity: {self.quantity}, Price: {self.price}"
+    
+    def __getitem__(self, key):
+        if key == "itemId":
+            return self.item_id
+        elif key == "quantity":
+            return self.quantity
+        elif key == "price":
+            return self.price
+        else:
+            raise KeyError(f"Key '{key}' not found in Item.")
 
 class Order:
     def __init__(self, order_id, customer_id, order_date, items, total_amount, currency, status):
@@ -39,3 +49,21 @@ class Order:
     
     def __str__(self):
         return f"Order ID: {self.order_id}, Customer ID: {self.customer_id}, Order Date: {self.order_date}, Items: {self.items}, Total Amount: {self.total_amount}, Currency: {self.currency}, Status: {self.status}"
+    
+    def __getitem__(self, key):
+        if key == "orderId":
+            return self.order_id
+        elif key == "customerId":
+            return self.customer_id
+        elif key == "orderDate":
+            return self.order_date
+        elif key == "items":
+            return self.items
+        elif key == "totalAmount":
+            return self.total_amount
+        elif key == "currency":
+            return self.currency
+        elif key == "status":
+            return self.status
+        else:
+            raise KeyError(f"Key '{key}' not found in Order.")

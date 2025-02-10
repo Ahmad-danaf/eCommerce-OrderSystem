@@ -1,24 +1,37 @@
 version: '3.8'
 
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: shared-rabbitmq
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "2181:2181"
+
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--list"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+      timeout: 5s
 
   cart-service:
     image: domi13/cart-service:latest
     container_name: cart-service
     depends_on:
-      - rabbitmq
+      kafka:
+        condition: service_healthy
     environment:
-      RABBITMQ_HOST: shared-rabbitmq
-      RABBITMQ_PORT: 5672
+      KAFKA_BROKER: kafka:9092
     ports:
       - "5000:5000"
 
@@ -26,9 +39,9 @@ services:
     image: domi13/order-service:latest
     container_name: order-service
     depends_on:
-      - rabbitmq
+      kafka:
+        condition: service_healthy
     environment:
-      RABBITMQ_HOST: shared-rabbitmq
-      RABBITMQ_PORT: 5672
+      KAFKA_BROKER: kafka:9092
     ports:
       - "5001:5001"

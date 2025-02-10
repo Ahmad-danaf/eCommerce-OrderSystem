@@ -2,3 +2,4 @@ flask
 pika
 pytest
 requests
+kafka-python==2.0.2

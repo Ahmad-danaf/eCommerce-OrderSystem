@@ -4,7 +4,18 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 VALID_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY', 'SEK', 'NZD']
-VALID_STATUSES = ['pending', 'confirmed', 'cancelled', 'shipped', 'delivered','new', 'in progress']
+VALID_STATUSES = [
+    'pending', 'confirmed', 'cancelled', 'shipped', 'delivered', 'new', 
+    'in progress', 'completed', 'failed', 'returned', 'refunded', 'disputed', 
+    'partially refunded', 'partially returned', 'processing', 'awaiting payment', 
+    'on hold', 'ready for dispatch', 'backordered', 'delayed', 'out for delivery', 
+    'out of stock', 'pre-order', 'payment pending', 'pending shipment', 
+    'approved', 'rejected', 'under review', 'closed', 'in transit', 'waiting for approval', 
+    'pending review', 'canceled by customer', 'pending payment', 'waiting for stock', 
+    'pending shipment', 'awaiting confirmation', 'on the way', 'delivered late', 'scheduled', 
+    'return requested', 'partially shipped', 'partially delivered', 'preparing for shipment', 
+    'processing payment', 'pending authorization', 'shipped but not delivered', 'pending cancellation'
+]
 
 def validate_order_data(order_data):
     if not order_data.get('orderId'):
@@ -31,7 +42,7 @@ def validate_currency(currency):
         raise ValueError(f"Invalid currency: {currency}. Valid options are {', '.join(VALID_CURRENCIES)}")
 
 def validate_status(status):
-    if status not in VALID_STATUSES:
+    if status.lower() not in VALID_STATUSES:
         raise ValueError(f"Invalid status: {status}. Valid statuses are {', '.join(VALID_STATUSES)}")
 
 def validate_iso8601(date_string):

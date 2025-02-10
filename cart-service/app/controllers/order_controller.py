@@ -3,9 +3,12 @@ from app.models.validators import validate_order
 from datetime import datetime
 import random
 import uuid
+from app.storage import load_from_file,save_to_file
 
 def create_order(order_id, items_num):
     # Generate random items
+    load_from_file()
+    from app.storage import storage
     items = [
         Item(
             item_id=f"ITEM-{i+1}",
@@ -28,8 +31,24 @@ def create_order(order_id, items_num):
         currency="USD",
         status="new"
     )
-
+    print("before saving")
     # Validate the order
-    validate_order(order.to_dict())
+    order_dict = order.to_dict()
+    validate_order(order_dict)
+    print("after validation")
+    print("about to save..................")
+    storage[order_dict["orderId"]] = order_dict
+    save_to_file()
+    return order_dict  
 
+def update_order_status(order_id, new_status):
+    load_from_file()
+    from app.storage import storage
+    order = storage.get(order_id)
+    if not order:
+        raise ValueError(f"Order {order_id} not found")
+    order["status"] = new_status
+    order["updatedAt"] = datetime.utcnow().isoformat() + "Z"
+    storage[order_id] = order
+    save_to_file()
     return order
