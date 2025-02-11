@@ -4,6 +4,7 @@ import logging
 from kafka_producer import publish_order
 from datetime import datetime
 import json
+from kafka.errors import KafkaError
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,8 +30,12 @@ def create_order_view():
         # Publish order to Kafka
         publish_order(order_id, order)
 
-
         return jsonify({"message": "Order created successfully", "order": order}), 201
+    
+    except KafkaError as ke:
+        logger.error(f"Kafka error while publishing order {order_id}: {ke}")
+        return jsonify({"error": "Failed to publish order to Kafka"}), 500
+    
     except Exception as e:
         logger.error(f"Error creating order: {e}")
         return jsonify({"error": "no way"}), 500
@@ -51,11 +56,19 @@ def update_order():
         
         # Update order status
         update_event = update_order_status(order_id, new_status)
+        if not update_event:
+            return jsonify({"error": "Order not found"}), 400
 
         # Publish update to Kafka
         publish_order(order_id, update_event)
 
         return jsonify({"message": "Order updated successfully", "order": update_event}), 200
+    except KafkaError as ke:
+        logger.error(f"Kafka error while publishing updated order {order_id}: {ke}")
+        return jsonify({"error": "Failed to publish updated order to Kafka"}), 500
+    except ValueError as ve:
+        logger.warning(f"Validation error: {ve}")
+        return jsonify({"error": str(ve)}), 400
     except Exception as e:
         logger.error(f"Error updating order: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "An internal error occurred"}), 500

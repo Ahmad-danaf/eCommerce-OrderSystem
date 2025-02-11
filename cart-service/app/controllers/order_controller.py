@@ -44,9 +44,9 @@ def create_order(order_id, items_num):
 def update_order_status(order_id, new_status):
     load_from_file()
     from app.storage import storage
-    order = storage.get(order_id)
+    order = storage.get(order_id, None)
     if not order:
-        raise ValueError(f"Order {order_id} not found")
+        return None
     order["status"] = new_status
     order["updatedAt"] = datetime.utcnow().isoformat() + "Z"
     storage[order_id] = order
