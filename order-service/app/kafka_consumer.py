@@ -67,15 +67,25 @@ def process_order_event():
 
                         logger.info(f"Processing order {order_id}: {order_data}")
 
+                        # Process every event (new or update)
+                        total_amount = order_data.get("totalAmount", 0)
+                        # Calculate shipping cost only if needed (e.g., for new orders)
                         if order_data.get("status") == "new":
-                            total_amount = order_data.get("totalAmount", 0)
                             shipping_cost = round(total_amount * 0.02, 2)
                             order_data["shippingCost"] = shipping_cost
-                            clean_order = serialize_order(order_data)
-
-                            storage[order_id] = clean_order
-                            save_to_file()
-                            logger.info(f"Stored order {order_id} with shipping cost {shipping_cost}")
+                        else:
+                            existing_shipping_cost = order_data.get("shippingCost", None)
+                            if existing_shipping_cost is not None:
+                               order_data["shippingCost"] = existing_shipping_cost
+                            else:
+                                shipping_cost = round(total_amount * 0.02, 2)
+                                order_data["shippingCost"] = shipping_cost
+                            
+                            
+                        clean_order = serialize_order(order_data)
+                        storage[order_id] = clean_order
+                        save_to_file()
+                        logger.info(f"Updated order {order_id} in storage.")
 
                         try:
                             consumer.commit()
